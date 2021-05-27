@@ -11,19 +11,65 @@
   </head>
   <body>
     
-      <h1>Ejemplo de Uso de Jquery + CouchDB</h1>
+    <h1>Ejemplo de Uso de Jquery + CouchDB</h1>
+
+    <div class="ui-widget">
+      <label for="tags">Pais: </label>
+      <input id="tags">
+    </div> <br>
+
+    <button type="submit">Buscar</button>
+  
+    <div id="tabs">
+      <ul></ul>
+    </div>
 
   </body>
   <script>
     $(document).ready(function() {
       $.ajax({
-            dataType: 'json',
-            url: "http://127.0.0.1:5984/mundial2018/_all_docs?include_docs=True"
-            }).then(function(data) {
-              
-              
+        dataType: 'json',
+        url: "http://127.0.0.1:5984/mundial2018/_all_docs?include_docs=True"
+        }).then(function(data) {
+          var cadena = '';
+          var lista = [];
+          for(var i=0; i<data.rows.length; i++){
+              if( data.rows[i].doc.Numero ) {
+                var cadena = data.rows[i].doc.Country; //se trae todos los paises
+                lista.push(cadena);
+              }
+          }
+          lista = Array.from(new Set(lista)) //se cada los paises unicos
+          console.log(lista)
+          $( "#tags" ).autocomplete({
+              source: lista
+          });
+          $( "button" ).click(function() {
+            let pais = document.getElementById("tags").value; //se extrae el pais ingresado en el input
+            console.log(pais)
 
-            });
+            for(var i=0; i<data.rows.length; i++) {
+              if( data.rows[i].doc.Numero ) {
+                if (data.rows[i].doc.Country == pais) {
+
+                  // se crean las etiquetas correspondientes para el funcionamiento del tab 
+                  // con los respectivos datos de los jugadores de acuerdo al pais
+                  $('ul').append('<li><a href="#tabs-'+ i +'">'+ data.rows[i].doc.FIFADisplayName +'</a></li>');
+                  
+                  $( "#tabs" ).append('<div id="tabs-' + i + '">' + 
+                    '<p>Dorsal: '+ data.rows[i].doc.FIFADisplayName + '</p>' +
+                    '<p>FIFADisplayName: ' + data.rows[i].doc.FIFADisplayName + '</p>' +
+                    '<p>Nombre: ' + data.rows[i].doc.FirstName + '</p>' +
+                    '<p>Apellidos: ' + data.rows[i].doc.LastName + '</p>' +
+                    '<p>Posición en el campo : ' + data.rows[i].doc.POS + '</p>' +
+                    '<div>');
+                  console.log("si existe");
+                }
+              }
+            }
+            $( "#tabs" ).tabs();
+          });
+        });
     });
   </script>
 </html>
